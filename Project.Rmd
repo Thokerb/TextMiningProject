@@ -62,6 +62,10 @@ q2 = q1$data
 q1$data
 View(as.matrix(q1$data))
 
+```
+
+
+```{r}
 sources = aggregate(q2$domain,by=list(q2$domain), FUN=length) 
 sources = as.data.frame(sources)
 sources = filter(sources, x>1)
@@ -69,17 +73,11 @@ sources = filter(sources, x>1)
 
 
 barplot(height=sources$x,names = sources$Group.1,
-        xlab="categories", 
-        ylab="values", 
-        main="My title", 
-        horiz=T, las=1
+        xlab="posts", 
+        ylab="news outlets", 
+        main="Sources", 
+        horiz=T, las=1,
         )
-
-```
-
-
-```{r}
-
 ```
 
 
