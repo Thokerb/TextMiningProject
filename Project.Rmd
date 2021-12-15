@@ -31,14 +31,20 @@ require(ggplot2)
 ```
 
 ```{r}
+subreddit = "worldnews"
+timepoint = 1576399066
+
+```
+
+
+
+```{r}
 base_url = "https://api.pushshift.io/reddit/search/"
 submission_endpoint = "submission/"
 
 
-subreddit = "worldnews"
 sort = "desc"
-entries = 500
-timepoint = 1576399066
+entries = 10
 fields=paste("author","created_utc","domain","full_link","num_comments","score","title","id",sep=",")
 
 
@@ -63,6 +69,57 @@ q1$data
 View(as.matrix(q1$data))
 
 ```
+```{r}
+base_url = "https://www.reddit.com/r/"
+comment_endpoint = "comments/"
+id = "rgu4t3"
+
+
+sort = "top" #alternative: controversial
+entries = 20
+depth = 5
+
+
+
+
+getComments = function(comment){
+  print(comment)
+  df = subset(comment,select = c("id","author","body"))
+  
+  for (repl in comment[["replies"]]) {
+    if(!is.null(repl) && !is.character(repl)){
+      
+      df = rbind(df, getComments(as.data.frame(repl$data$children[2])$data))
+    }
+  }
+  
+  
+  return(df)
+}
+
+
+getAllCommentsById = function(id){
+  query_comments = paste(base_url,subreddit,"/", comment_endpoint,id,".json?",
+                        "depth=",depth,"&",
+                        "limit=",entries,"&",
+                        "showtitle=false&",
+                        "showedits=false&",
+                        "showmedia=false&",
+                        "showmore=false&",
+                        "sort=",sort,
+                        sep="")
+  commentFromJson = fromJSON(query_comments)
+  raw_df = as.data.frame(commentFromJson$data$children[2])$data
+  print(raw_df == "raw_df")
+  
+  df = getComments(comment = raw_df)
+  return(df)
+}
+
+
+df_result <- getAllCommentsById(id)
+```
+
 
 
 ```{r}
