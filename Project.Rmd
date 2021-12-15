@@ -33,7 +33,6 @@ require(ggplot2)
 ```{r}
 subreddit = "worldnews"
 timepoint = 1576399066
-
 ```
 
 
@@ -52,7 +51,10 @@ fields=paste("author","created_utc","domain","full_link","num_comments","score",
 sort_type = "score"
 
 
-query_top_posts = paste(base_url, submission_endpoint,"?",
+
+
+getTopPosts = function(){
+  query_top_posts = paste(base_url, submission_endpoint,"?",
                         "subreddit=",subreddit,"&",
                         "sort=",sort,"&",
                         "size=",entries,"&",
@@ -60,15 +62,18 @@ query_top_posts = paste(base_url, submission_endpoint,"?",
                         "sort_type=",sort_type,"&",
                         "fields=",fields,
                         sep="")
+  q1 = fromJSON(query_top_posts)
+  return(as.matrix(q1$data))
 
+}
 
-query_top_posts
-q1 = fromJSON(query_top_posts)
-q2 = q1$data
-q1$data
-View(as.matrix(q1$data))
-
+top_posts = getTopPosts()
 ```
+
+
+
+
+
 ```{r}
 base_url = "https://www.reddit.com/r/"
 comment_endpoint = "comments/"
