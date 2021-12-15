@@ -5,6 +5,8 @@ output: html_document
 
 ```{r}
 install.packages("request")
+install.packages("jsonlite")
+require("jsonlite")
 require("request")
 ```
 
@@ -27,10 +29,6 @@ require(ggplot2)
 ```
 
 ```{r}
-# current top 10 entries
-url = "https://www.reddit.com/r/worldnews/top/.json?t=week&limit=10"
-url2 = "https://api.pushshift.io/reddit/search/submission/?subreddit=worldnews&sort=desc&size=10&before=1576399066&sort_type=score"
-
 base_url = "https://api.pushshift.io/reddit/search/"
 submission_endpoint = "submission/"
 
@@ -53,6 +51,9 @@ query_top_posts = paste(base_url, submission_endpoint,"?",
                         sep="")
 
 
+query_top_posts
+q1 = fromJSON(query_top_posts)
+q2 = q1$data
 ```
 
 
