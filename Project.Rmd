@@ -3,26 +3,61 @@ title: "TextMiningProject"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r}
+install.packages("request")
+require("request")
 ```
 
-## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+```{r}
+require(pdflatex)
+require(tinytex)
+require(quanteda)
+require(quanteda.textmodels)
+require(quanteda.textstats)
+require(quanteda.textplots)
+# devtools::install_github("kbenoit/quanteda.dictionaries") 
+require(quanteda.dictionaries)
+require(readtext)
+require(devtools)
+require(quanteda.corpora)
+require(newsmap)
+require(seededlda)
+require(ggplot2)
 ```
 
-## Including Plots
+```{r}
+# current top 10 entries
+url = "https://www.reddit.com/r/worldnews/top/.json?t=week&limit=10"
+url2 = "https://api.pushshift.io/reddit/search/submission/?subreddit=worldnews&sort=desc&size=10&before=1576399066&sort_type=score"
 
-You can also embed plots, for example:
+base_url = "https://api.pushshift.io/reddit/search/"
+submission_endpoint = "submission/"
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+
+subreddit = "worldnews"
+sort = "desc"
+entries = 10
+timepoint = 1576399066
+
+# so that we get the top posts
+sort_type = "score"
+
+
+query_top_posts = paste(base_url, submission_endpoint,"?",
+                        "subreddit=",subreddit,"&",
+                        "sort=",sort,"&",
+                        "size=",entries,"&",
+                        "before=",timepoint,"&",
+                        "sort_type=",sort_type,
+                        sep="")
+
+
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+```{r}
+
+```
+
+
