@@ -6,8 +6,10 @@ output: html_document
 ```{r}
 install.packages("request")
 install.packages("jsonlite")
+install.packages("tidyverse")
 require("jsonlite")
 require("request")
+require("tidyverse")
 ```
 
 
@@ -35,8 +37,10 @@ submission_endpoint = "submission/"
 
 subreddit = "worldnews"
 sort = "desc"
-entries = 10
+entries = 500
 timepoint = 1576399066
+fields=paste("author","created_utc","domain","full_link","num_comments","score","title","id",sep=",")
+
 
 # so that we get the top posts
 sort_type = "score"
@@ -47,13 +51,30 @@ query_top_posts = paste(base_url, submission_endpoint,"?",
                         "sort=",sort,"&",
                         "size=",entries,"&",
                         "before=",timepoint,"&",
-                        "sort_type=",sort_type,
+                        "sort_type=",sort_type,"&",
+                        "fields=",fields,
                         sep="")
 
 
 query_top_posts
 q1 = fromJSON(query_top_posts)
 q2 = q1$data
+q1$data
+View(as.matrix(q1$data))
+
+sources = aggregate(q2$domain,by=list(q2$domain), FUN=length) 
+sources = as.data.frame(sources)
+sources = filter(sources, x>1)
+
+
+
+barplot(height=sources$x,names = sources$Group.1,
+        xlab="categories", 
+        ylab="values", 
+        main="My title", 
+        horiz=T, las=1
+        )
+
 ```
 
 
