@@ -38,27 +38,24 @@ timepoint = 1576399066
 
 
 ```{r}
-base_url = "https://api.pushshift.io/reddit/search/"
-submission_endpoint = "submission/"
-
-
-sort = "desc"
-entries = 10
-fields=paste("author","created_utc","domain","full_link","num_comments","score","title","id",sep=",")
-
-
-# so that we get the top posts
-sort_type = "score"
-
-
-
-
-getTopPosts = function(){
+getTopPosts = function(before,after){
+  
+  base_url = "https://api.pushshift.io/reddit/search/"
+  submission_endpoint = "submission/"
+  sort = "desc"
+  entries = 50
+  fields=paste("author","created_utc","domain","full_link","num_comments","score","title","id",sep=",")
+  # so that we get the top posts
+  sort_type = "score"
+  
+  
+  
   query_top_posts = paste(base_url, submission_endpoint,"?",
                         "subreddit=",subreddit,"&",
                         "sort=",sort,"&",
                         "size=",entries,"&",
-                        "before=",timepoint,"&",
+                        "before=",before,"&",
+                        "after=",after,"&",
                         "sort_type=",sort_type,"&",
                         "fields=",fields,
                         sep="")
@@ -67,7 +64,7 @@ getTopPosts = function(){
 
 }
 
-top_posts = getTopPosts()
+#top_posts = getTopPosts()
 ```
 
 
@@ -75,35 +72,34 @@ top_posts = getTopPosts()
 
 
 ```{r}
-base_url = "https://www.reddit.com/r/"
-comment_endpoint = "comments/"
-id = "rgu4t3"
-
-
-sort = "top" #alternative: controversial
-entries = 20
-depth = 5
-
-
 
 
 getComments = function(comment){
-  print(comment)
-  df = subset(comment,select = c("id","author","body"))
+  df = subset(comment,select = c("id","author","ups","body","created_utc"))
   
   for (repl in comment[["replies"]]) {
-    if(!is.null(repl) && !is.character(repl)){
-      
-      df = rbind(df, getComments(as.data.frame(repl$data$children[2])$data))
+    if(!is.null(repl) && !is.character(repl) && !is.null(repl$data$children)){
+      for(i in 1:length(repl$data$children)){
+        elem = as.data.frame(repl$data$children[i])$data
+        if(!is.null(elem)){
+            df = rbind(df, getComments(elem))
+        }
+      }
     }
   }
-  
-  
   return(df)
 }
 
 
 getAllCommentsById = function(id){
+  base_url = "https://www.reddit.com/r/"
+  comment_endpoint = "comments/"
+
+  
+  sort = "top" #alternative: controversial
+  entries = 20
+  depth = 3
+  
   query_comments = paste(base_url,subreddit,"/", comment_endpoint,id,".json?",
                         "depth=",depth,"&",
                         "limit=",entries,"&",
@@ -114,17 +110,72 @@ getAllCommentsById = function(id){
                         "sort=",sort,
                         sep="")
   commentFromJson = fromJSON(query_comments)
+  query_comments
   raw_df = as.data.frame(commentFromJson$data$children[2])$data
-  print(raw_df == "raw_df")
-  
+
   df = getComments(comment = raw_df)
+  df = df[df$body != "[deleted]",]
+  df = df[df$body != "[removed]",]
   return(df)
+}
+id = "aengo3"
+df_result = getAllCommentsById(id)
+df_result
+```
+
+```{r}
+yearvector = c("2013","2014","2015","2016","2017")
+
+for(onlyyear in yearvector){
+  
+baseyear =  as.Date(paste(onlyyear,"-01-01",sep = ""))
+year =  baseyear
+dateToEpoch = function(d){
+  return(as.integer(as.POSIXct(d)))
+}
+
+topPosts2019 = data.frame()
+
+
+
+for (i in seq(2,52,2)) {
+  after = dateToEpoch(year)
+  before = dateToEpoch(year + 7 * i) - 1
+  tp = getTopPosts(before = before,after = after)
+  tp = as.data.frame(tp)
+  topPosts2019 = rbind(topPosts2019,tp)
+  print(year)
+  year = baseyear + 7 * i
+  Sys.sleep(5)
+}
+
+#more than 10 comments
+typeof(topPosts2019$num_comments)
+
+topPosts2019 = topPosts2019[as.integer(topPosts2019$num_comments) > 10,]
+topPosts2019 = unique(topPosts2019)
+
+
+saveRDS(topPosts2019, file = paste("topPostsEvery2Weeks",onlyyear,".rds",sep=""))
+
+
+allComments2019ForPosts = data.frame()
+for(i in 1:nrow(topPosts2019)){
+  row = topPosts2019[i,]
+  print(row$id)
+  comments = getAllCommentsById(row$id)
+  if(nrow(comments) != 0){
+    comments = cbind(comments, postId=row["id"])
+    allComments2019ForPosts = rbind(allComments2019ForPosts,comments)
+  }
+}
+names(allComments2019ForPosts)[6] <- "postId"
+
+saveRDS(allComments2019ForPosts, file = paste("comments",onlyyear,".rds",sep=""))
 }
 
 
-df_result <- getAllCommentsById(id)
 ```
-
 
 
 ```{r}
