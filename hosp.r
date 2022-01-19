@@ -4,8 +4,8 @@ require(quanteda.textplots)
 require(quanteda.corpora)
 require(ggplot2)
 
-topPosts_file <- "topPostsEvery2Weeks2021.RDS"
-comments_file <- "comments2021.RDS"
+topPosts_file <- "data/topPostsEvery2Weeks2021.RDS"
+comments_file <- "data/comments2021.RDS"
 
 #load data
 topPosts_rds <- readRDS(topPosts_file)
