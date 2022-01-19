@@ -4,6 +4,7 @@ require(quanteda.textplots)
 require(ggplot2)
 require(tidyverse)
 library("lubridate")
+require(gridExtra)
 
 get_data <- function(year) {
   
@@ -112,3 +113,35 @@ textplot_wordcloud(news2018$topPosts)
 textplot_wordcloud(news2019$topPosts)
 textplot_wordcloud(news2020$topPosts)
 textplot_wordcloud(news2021$topPosts)
+
+
+##Upvotes-Sentiment
+
+plot_score <- function(year) {
+  comments <- readRDS(paste("data/comments", year, ".rds", sep = ""))
+  topPosts <- readRDS(paste("data/topPostsEvery2Weeks", year, ".rds", sep = ""))
+  corp_comments <- corpus(comments, text_field = "body")
+  corp_topPosts <- corpus(topPosts, text_field = "title")
+  tok_comments <- tokens(corp_comments, remove_punct = TRUE, remove_numbers = TRUE, remove_url = TRUE, remove_symbols = TRUE) %>%
+    tokens_remove(pattern = stopwords("en"))
+  tok_topPosts <- tokens(corp_topPosts, remove_punct = TRUE, remove_numbers = TRUE, remove_url = TRUE, remove_symbols = TRUE) %>%
+    tokens_remove(pattern = stopwords("en"))
+  
+  dfm_lsd_comments <- dfm(tokens_lookup(tok_comments, dictionary = data_dictionary_LSD2015))
+  dfm_lsd_topPosts <- dfm(tokens_lookup(tok_topPosts, dictionary = data_dictionary_LSD2015))
+  output_comments <- convert(dfm_lsd_comments, to="data.frame")
+  output_comments$sent_score <- log((output_comments$positive + output_comments$neg_negative + 0.5) / (output_comments$negative + output_comments$neg_positive + 0.5))
+  output_topPosts <- convert(dfm_lsd_topPosts, to="data.frame")
+  output_topPosts$sent_score <- log((output_topPosts$positive + output_topPosts$neg_negative + 0.5) / (output_topPosts$negative + output_topPosts$neg_positive + 0.5))
+  
+  comparison_comments <- data.frame("upvotes"=comments$ups, "sent_score" = output_comments$sent_score)
+  plot_comments <- ggplot(comparison_comments, aes(upvotes, sent_score)) + geom_line(color="darkblue") + ggtitle(paste("Comments", year))
+  comparison_topPosts <- data.frame("post_score"=strtoi(topPosts$score), "sent_score" = output_topPosts$sent_score)
+  plot_topPosts <- ggplot(comparison_topPosts, aes(post_score, sent_score)) + geom_line(color="darkblue") + ggtitle(paste("Top Post", year))
+  
+  grid.arrange(plot_comments, plot_topPosts, nrow=2)
+}
+
+
+plot_score(2015)
+plot_score(2020)
