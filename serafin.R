@@ -6,6 +6,10 @@ require(tidyverse)
 library("lubridate")
 require(gridExtra)
 
+
+#################################
+## Wordclouds + frequent words ##
+#################################
 get_data <- function(year) {
   
   #Import Comments and Top Posts
@@ -37,7 +41,6 @@ get_data <- function(year) {
 }
 
 
-
 news2013 <- get_data(2013)
 news2014 <- get_data(2014)
 news2015 <- get_data(2015)
@@ -47,6 +50,14 @@ news2018 <- get_data(2018)
 news2019 <- get_data(2019)
 news2020 <- get_data(2020)
 news2021 <- get_data(2021)
+
+topPosts2013_2015 <- rbind(news2013$topPosts, news2014$topPosts, news2015$topPosts)
+topPosts2016_2019 <- rbind(news2016$topPosts, news2017$topPosts, news2018$topPosts, news2019$topPosts)
+topPosts2020_2021 <- rbind(news2020$topPosts, news2021$topPosts)
+
+textplot_wordcloud(topPosts2013_2015)
+textplot_wordcloud(topPosts2016_2019)
+textplot_wordcloud(topPosts2020_2021)
 
 #Frequency of words in comments
 freq_comments_2013 <- textstat_frequency(news2013$comments)
@@ -92,7 +103,7 @@ comparison_freq <- data.frame(
 
 write.csv(comparison_freq, "Output/most_frequent_words.csv")
 
-#wordcloud
+#wordclouds
 textplot_wordcloud(news2013$comments)
 textplot_wordcloud(news2014$comments)
 textplot_wordcloud(news2015$comments)
@@ -102,7 +113,6 @@ textplot_wordcloud(news2018$comments)
 textplot_wordcloud(news2019$comments)
 textplot_wordcloud(news2020$comments)
 textplot_wordcloud(news2021$comments)
-
 
 textplot_wordcloud(news2013$topPosts)
 textplot_wordcloud(news2014$topPosts)
@@ -114,9 +124,9 @@ textplot_wordcloud(news2019$topPosts)
 textplot_wordcloud(news2020$topPosts)
 textplot_wordcloud(news2021$topPosts)
 
-
-##Upvotes-Sentiment
-
+#######################
+## Upvotes-Sentiment ##
+#######################
 plot_score <- function(year) {
   comments <- readRDS(paste("data/comments", year, ".rds", sep = ""))
   topPosts <- readRDS(paste("data/topPostsEvery2Weeks", year, ".rds", sep = ""))
@@ -135,9 +145,9 @@ plot_score <- function(year) {
   output_topPosts$sent_score <- log((output_topPosts$positive + output_topPosts$neg_negative + 0.5) / (output_topPosts$negative + output_topPosts$neg_positive + 0.5))
   
   comparison_comments <- data.frame("upvotes"=comments$ups, "sent_score" = output_comments$sent_score)
-  plot_comments <- ggplot(comparison_comments, aes(upvotes, sent_score)) + geom_line(color="darkblue") + ggtitle(paste("Comments", year))
+  plot_comments <- ggplot(comparison_comments, aes(upvotes, sent_score)) + geom_line(color="darkblue") + ggtitle(paste("Comments", year)) + xlab("Number of Upvotes") + ylab("Sentiment Score")
   comparison_topPosts <- data.frame("post_score"=strtoi(topPosts$score), "sent_score" = output_topPosts$sent_score)
-  plot_topPosts <- ggplot(comparison_topPosts, aes(post_score, sent_score)) + geom_line(color="darkblue") + ggtitle(paste("Top Post", year))
+  plot_topPosts <- ggplot(comparison_topPosts, aes(post_score, sent_score)) + geom_line(color="darkblue") + ggtitle(paste("Top Post", year)) + xlab("Score of Post") + ylab("Sentiment Score")
   
   grid.arrange(plot_comments, plot_topPosts, nrow=2)
 }
@@ -145,3 +155,7 @@ plot_score <- function(year) {
 
 plot_score(2015)
 plot_score(2020)
+
+covid <- readRDS("data/covid.rds")
+russia <- readRDS("data/russia.rds")
+trump <- readRDS("data/trump.rds")
