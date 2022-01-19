@@ -52,6 +52,7 @@ getTopPosts = function(before,after){
                         "subreddit=",subreddit,"&",
                         "sort=",sort,"&",
                         "size=",entries,"&",
+                        "link_flair_text=COVID-19",
                         "before=",before,"&",
                         "after=",after,"&",
                         "sort_type=",sort_type,"&",
@@ -122,7 +123,7 @@ df_result
 ```
 
 ```{r}
-yearvector = c("2013","2014","2015","2016","2017")
+yearvector = c("2019","2020","2021")
 
 for(onlyyear in yearvector){
   
@@ -154,7 +155,7 @@ topPosts2019 = topPosts2019[as.integer(topPosts2019$num_comments) > 10,]
 topPosts2019 = unique(topPosts2019)
 
 
-saveRDS(topPosts2019, file = paste("topPostsEvery2Weeks",onlyyear,".rds",sep=""))
+saveRDS(topPosts2019, file = paste("topPostsEvery2Weeks_corona",onlyyear,".rds",sep=""))
 
 
 allComments2019ForPosts = data.frame()
@@ -272,6 +273,13 @@ russia_data_frame = wholerds %>%  filter(grepl(greplstring,title))
 saveRDS(object = russia_data_frame, "russia.rds")
 saveRDS(object = trump_data_frame, "trump.rds")
 saveRDS(object = covid_data_frame, "covid.rds")
+
+```
+
+```{r}
+as.Date(1481267764)
+
+as.Date(as.POSIXct(1481267764, origin="1970-01-01"))
 
 ```
 
