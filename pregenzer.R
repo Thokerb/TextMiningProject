@@ -13,7 +13,7 @@ topPosts_rds <- readRDS(topPosts_file)
 test <- topPosts_rds %>%
   group_by(domain) %>%
   summarise(full_text = paste(title, collapse = " ; ")) %>%
-  filter(grepl(greplstr, full_text))
+  filter(nchar(full_text) >= 250)
 
 test2 <- data.frame(test)
 
