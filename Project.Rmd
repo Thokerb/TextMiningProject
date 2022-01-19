@@ -4,12 +4,10 @@ output: html_document
 ---
 
 ```{r}
-install.packages("request")
-install.packages("jsonlite")
-install.packages("tidyverse")
 require("jsonlite")
 require("request")
 require("tidyverse")
+require("stringr")
 ```
 
 
@@ -174,7 +172,6 @@ names(allComments2019ForPosts)[6] <- "postId"
 saveRDS(allComments2019ForPosts, file = paste("comments",onlyyear,".rds",sep=""))
 }
 
-
 ```
 
 
@@ -191,6 +188,91 @@ barplot(height=sources$x,names = sources$Group.1,
         main="Sources", 
         horiz=T, las=1,
         )
+```
+
+
+```{r}
+rds2019 = readRDS("C:\\Users\\kerbe\\Desktop\\TextMining\\project\\TextMiningProject\\data\\topPostsEvery2Weeks2019.rds")
+rds2020 = readRDS("C:\\Users\\kerbe\\Desktop\\TextMining\\project\\TextMiningProject\\data\\topPostsEvery2Weeks2020.rds")
+rds2021 = readRDS("C:\\Users\\kerbe\\Desktop\\TextMining\\project\\TextMiningProject\\data\\topPostsEvery2Weeks2020.rds")
+
+rds2019_2021 = rbind(rds2019,rds2020,rds2021)
+toks19_21 = tokens(corpus(rds2019_2021, text_field= "title"), remove_punct = TRUE) %>% tokens_remove(pattern = stopwords("en"))
+dfm19_21 = dfm(toks19_21)
+covid_theme = c("covid","coronavirus","covid-19")
+covid_simil <- textstat_simil(dfm19_21,dfm19_21[,covid_theme], method = "correlation", margin = "features",min_simil = 0.3)
+covid_simil = as.data.frame(covid_simil)
+words = as.vector(covid_simil$feature1)
+words = c(words,covid_theme)
+words = c(words,"corona")
+greplstring = paste(words,sep="|",collapse="|")
+greplstring
+
+covid_data_frame = rds2019_2021 %>%  filter(grepl(greplstring,title))
+
+rds2016 = readRDS("C:\\Users\\kerbe\\Desktop\\TextMining\\project\\TextMiningProject\\data\\topPostsEvery2Weeks2016.rds")
+rds2017 = readRDS("C:\\Users\\kerbe\\Desktop\\TextMining\\project\\TextMiningProject\\data\\topPostsEvery2Weeks2017.rds")
+rds2018 = readRDS("C:\\Users\\kerbe\\Desktop\\TextMining\\project\\TextMiningProject\\data\\topPostsEvery2Weeks2018.rds")
+rds2019 = readRDS("C:\\Users\\kerbe\\Desktop\\TextMining\\project\\TextMiningProject\\data\\topPostsEvery2Weeks2019.rds")
+rds2020 = readRDS("C:\\Users\\kerbe\\Desktop\\TextMining\\project\\TextMiningProject\\data\\topPostsEvery2Weeks2020.rds")
+
+
+rds2016_2020 = rbind(rds2016,rds2017,rds2018,rds2019,rds2020)
+toks16_20 = tokens(corpus(rds2016_2020, text_field= "title"), remove_punct = TRUE) %>% tokens_remove(pattern = stopwords("en"))
+dfm16_20 = dfm(toks16_20)
+
+
+
+trump_theme = c("trump","donald","president")
+trump_simil <- textstat_simil(dfm16_20,dfm16_20[,trump_theme], method = "correlation", margin = "features",min_simil = 0.3)
+trump_simil = as.data.frame(trump_simil)
+words = as.vector(trump_simil$feature1)
+words = c(words,trump_theme)
+words = c(words)
+greplstring = paste(words,sep="|",collapse="|")
+greplstring
+trump_data_frame = rds2019_2021 %>%  filter(grepl(greplstring,title))
+
+
+rds2013 = readRDS("C:\\Users\\kerbe\\Desktop\\TextMining\\project\\TextMiningProject\\data\\topPostsEvery2Weeks2013.rds")
+rds2014 = readRDS("C:\\Users\\kerbe\\Desktop\\TextMining\\project\\TextMiningProject\\data\\topPostsEvery2Weeks2014.rds")
+rds2015 = readRDS("C:\\Users\\kerbe\\Desktop\\TextMining\\project\\TextMiningProject\\data\\topPostsEvery2Weeks2015.rds")
+rds2016 = readRDS("C:\\Users\\kerbe\\Desktop\\TextMining\\project\\TextMiningProject\\data\\topPostsEvery2Weeks2016.rds")
+rds2017 = readRDS("C:\\Users\\kerbe\\Desktop\\TextMining\\project\\TextMiningProject\\data\\topPostsEvery2Weeks2017.rds")
+rds2018 = readRDS("C:\\Users\\kerbe\\Desktop\\TextMining\\project\\TextMiningProject\\data\\topPostsEvery2Weeks2018.rds")
+rds2019 = readRDS("C:\\Users\\kerbe\\Desktop\\TextMining\\project\\TextMiningProject\\data\\topPostsEvery2Weeks2019.rds")
+rds2020 = readRDS("C:\\Users\\kerbe\\Desktop\\TextMining\\project\\TextMiningProject\\data\\topPostsEvery2Weeks2020.rds")
+rds2021 = readRDS("C:\\Users\\kerbe\\Desktop\\TextMining\\project\\TextMiningProject\\data\\topPostsEvery2Weeks2021.rds")
+wholerds = rbind(rds2013,rds2014,rds2015,rds2016,rds2017,rds2018,rds2019,rds2020,rds2021)
+wholetok = tokens(corpus(wholerds, text_field= "title"), remove_punct = TRUE) %>% tokens_remove(pattern = stopwords("en"))
+wholedfm = dfm(wholetok)
+
+europe_theme = c("europe","eu")
+europe_simil <- textstat_simil(wholedfm,wholedfm[,europe_theme], method = "correlation", margin = "features",min_simil = 0.3)
+europe_simil = as.data.frame(europe_simil)
+words = as.vector(europe_simil$feature1)
+words = c(words,europe_theme)
+words = c(words)
+words = europe_theme
+greplstring = paste(words,sep="|",collapse="|")
+greplstring
+europe_data_frame = wholerds %>%  filter(grepl(greplstring,title))
+
+
+russia_theme = c("russia","putin","vladimir")
+russia_simil <- textstat_simil(wholedfm,wholedfm[,russia_theme], method = "correlation", margin = "features",min_simil = 0.3)
+russia_simil = as.data.frame(russia_simil)
+words = as.vector(russia_simil$feature1)
+words = c(words,russia_theme)
+words = c(words)
+greplstring = paste(words,sep="|",collapse="|")
+greplstring
+russia_data_frame = wholerds %>%  filter(grepl(greplstring,title))
+
+saveRDS(object = russia_data_frame, "russia.rds")
+saveRDS(object = trump_data_frame, "trump.rds")
+saveRDS(object = covid_data_frame, "covid.rds")
+
 ```
 
 
